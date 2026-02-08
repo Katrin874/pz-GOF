@@ -1,0 +1,26 @@
+{
+  "name": "pz",
+  "version": "1.0.0",
+  
+  "scripts": {
+    "build": "tsc",
+    "bridge": "ts-node src/structural/bridge/index.ts",
+    "strategy": "ts-node src/behavioral/strategy/index.ts",
+    "observer": "ts-node src/behavioral/observer/index.ts",
+    "adapter": "ts-node src/structural/adapter/index.ts",
+    "singleton": "ts-node src/creational/singleton/index.ts",
+    "builder": "ts-node src/creational/builder/index.ts",
+    "factory-method": "ts-node src/creational/factory-method/index.ts",
+    "facade": "ts-node src/structural/facade/index.ts",
+    "all": "ts-node examples/run-all.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}
