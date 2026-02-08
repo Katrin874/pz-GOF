@@ -1,0 +1,28 @@
+# Залежності
+node_modules/
+jspm_packages/
+
+# Результати компіляції та збірки
+dist/
+out/
+build/
+*.tsbuildinfo
+
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Системні файли
+.DS_Store
+Thumbs.db
+
+# Налаштування IDE (VS Code, WebStorm)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Тимчасові файли та кеш
+.npm/
+.eslintcache

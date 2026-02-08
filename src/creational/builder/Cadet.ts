@@ -1,4 +1,6 @@
 import { IDisciplineRecord } from "../factory-method/IDisciplineRecord";
+import { MilitaryEventManager } from "../../behavioral/observer/MilitaryEventManager";
+import { MilitaryEventType } from "../../behavioral/observer/MilitaryEventType";
 
 export class Cadet {
     public fullName: string = "";
@@ -10,10 +12,21 @@ export class Cadet {
 
     public addAward(record: IDisciplineRecord): void {
         this.awards.push(record);
+        this.emitEvent(MilitaryEventType.AWARD_ADDED, record.getFormattedInfo());
     }
 
     public addPenalty(record: IDisciplineRecord): void {
         this.penalties.push(record);
+        this.emitEvent(MilitaryEventType.PENALTY_ADDED, record.getFormattedInfo());
+    }
+
+    private emitEvent(type: MilitaryEventType, details: string): void {
+        MilitaryEventManager.getInstance().notify({
+            type: type,
+            cadetName: this.fullName,
+            details: details,
+            timestamp: new Date()
+        });
     }
 
     public displayProfile(): void {

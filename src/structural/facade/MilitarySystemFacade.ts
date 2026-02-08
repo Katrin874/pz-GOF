@@ -5,12 +5,40 @@ import { PenaltyCreator } from "../../creational/factory-method/PenaltyCreator";
 import { LegacyOrderSystem } from "../adapter/LegacyOrderSystem";
 import { LegacyRecordAdapter } from "../adapter/LegacyRecordAdapter";
 
+import { MilitaryEventManager } from "../../behavioral/observer/MilitaryEventManager";
+import { MilitaryEventType } from "../../behavioral/observer/MilitaryEventType";
+import { StaffOffice } from "../../behavioral/observer/StaffOffice";
+import { NotificationService } from "../../behavioral/observer/NotificationService";
+
+
 export class MilitarySystemFacade {
     private database = Database.instance;
     private cadetBuilder = new CadetBuilder();
     private awardFactory = new AwardCreator();
     private penaltyFactory = new PenaltyCreator();
     private legacySystem = new LegacyOrderSystem();
+
+
+    constructor() {
+        this.setupEventListeners();
+    }
+
+    private setupEventListeners(): void {
+        const eventManager = MilitaryEventManager.getInstance();
+        
+        // Створюємо екземпляри спостерігачів
+        const staffOffice = new StaffOffice();
+        const notificationService = new NotificationService();
+
+        // Підписуємо їх на події (нагороди та стягнення)
+        eventManager.subscribe(MilitaryEventType.AWARD_ADDED, staffOffice);
+        eventManager.subscribe(MilitaryEventType.AWARD_ADDED, notificationService);
+
+        eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, staffOffice);
+        eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, notificationService);
+
+        console.log(`[ФАСАД]: Систему сповіщень активовано (Observer підключено).`);
+    }
 
     public registerCadet(name: string, rank: string, group: string): void {
         const cadet = this.cadetBuilder

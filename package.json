@@ -4,6 +4,8 @@
   
   "scripts": {
     "build": "tsc",
+    "all": "ts-node examples/run-all.ts",
+    "start": "node dist/examples/run-all.js",
     "bridge": "ts-node src/structural/bridge/index.ts",
     "strategy": "ts-node src/behavioral/strategy/index.ts",
     "observer": "ts-node src/behavioral/observer/index.ts",
@@ -11,8 +13,7 @@
     "singleton": "ts-node src/creational/singleton/index.ts",
     "builder": "ts-node src/creational/builder/index.ts",
     "factory-method": "ts-node src/creational/factory-method/index.ts",
-    "facade": "ts-node src/structural/facade/index.ts",
-    "all": "ts-node examples/run-all.ts"
+    "facade": "ts-node src/structural/facade/index.ts"
   },
   "keywords": [],
   "author": "",

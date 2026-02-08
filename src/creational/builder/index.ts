@@ -27,4 +27,4 @@ const cadet = builder
     .addPenalty(penalty)
     .build();
 
-cadet.displayProfile();
+ cadet.displayProfile();
