@@ -126,21 +126,20 @@
 
 ## Структура Проєкту:
 
-```text
-src
-├───behavioral
-│   └───observer         # Шина подій, типи подій та класи спостерігачів
-├───creational
-│   ├───builder          # Логіка покрокового створення Cadet, Award, Penalty
-│   ├───factory-method   # Творці записів (AwardCreator, PenaltyCreator)
-│   └───singleton        # Централізоване сховище (Database)
-├───structural
-│   ├───adapter          # LegacyOrderSystem та LegacyRecordAdapter
-│   └───facade           # MilitarySystemFacade (головний вузол керування)
-└───models               # Базові класи даних (Cadet)
-|
-examples
-└───run-all.ts           # взаємодія всіх 6 патернів
+pz-GOF
+├───dist/                # Скомпільований JavaScript код (після npm run build)
+├───node_modules/        # Залежності проєкту
+├───src/                 # Вихідний код TypeScript
+│   ├───behavioral/      # Поведінкові патерни (Observer)
+│   ├───creational/      # Породжувальні патерни (Singleton, Builder, Factory Method)
+│   ├───examples/        # Приклади та сценарії запуску (run-all.ts)
+│   └───structural/      # Структурні патерни (Facade, Adapter)
+├───temp/                # Тимчасові файли
+├───.gitignore           # Налаштування ігнорування файлів для Git
+├───package.json         # Конфігурація проєкту та скрипти запуску
+├───package-lock.json    # Фіксація версій залежностей
+├───README.md            # Документація проєкту
+└───tsconfig.json        # Налаштування компілятора TypeScript
 
 
 npm install — Завантажує необхідні залежності (TypeScript, Node engine) для роботи проєкту.
