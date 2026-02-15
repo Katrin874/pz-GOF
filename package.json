@@ -12,7 +12,7 @@
     "adapter": "ts-node src/structural/adapter/index.ts",
     "singleton": "ts-node src/creational/singleton/index.ts",
     "builder": "ts-node src/creational/builder/index.ts",
-    "factory-method": "ts-node src/creational/factory-method/index.ts",
+    "factory": "ts-node src/creational/factory-method/index.ts",
     "facade": "ts-node src/structural/facade/index.ts"
   },
   "keywords": [],

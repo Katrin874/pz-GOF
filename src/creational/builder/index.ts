@@ -23,6 +23,7 @@ const cadet = builder
     .setName("Чернікова Катерина")
     .setRank("Солдат")
     .setGroup("221")
+    .setFootSize(38)
     .addAward(award)   
     .addPenalty(penalty)
     .build();

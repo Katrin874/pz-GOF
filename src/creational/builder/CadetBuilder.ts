@@ -38,6 +38,10 @@ export class CadetBuilder {
         this.cadet.penalties.push(penalty);
         return this;
     }
+    public setFootSize(size: number): this {
+        this.cadet.footSize = size;
+        return this;
+    }
 
     public build(): Cadet {
         const result = this.cadet;

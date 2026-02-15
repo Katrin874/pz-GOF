@@ -2,6 +2,7 @@ import { Database } from "../../creational/singleton/Database";
 import { CadetBuilder } from "../../creational/builder/CadetBuilder";
 import { AwardCreator } from "../../creational/factory-method/AwardCreator";
 import { PenaltyCreator } from "../../creational/factory-method/PenaltyCreator";
+import { OrderCreator } from "../../creational/factory-method/OrderCreator";
 import { LegacyOrderSystem } from "../adapter/LegacyOrderSystem";
 import { LegacyRecordAdapter } from "../adapter/LegacyRecordAdapter";
 
@@ -10,94 +11,107 @@ import { MilitaryEventType } from "../../behavioral/observer/MilitaryEventType";
 import { StaffOffice } from "../../behavioral/observer/StaffOffice";
 import { NotificationService } from "../../behavioral/observer/NotificationService";
 
-
+/**
+ * ПАТЕРН FACADE (ФАСАД)
+ * Інтелектуальний центр управління системою. 
+ * Спрощує взаємодію з підсистемами та автоматизує бізнес-логіку.
+ */
 export class MilitarySystemFacade {
     private database = Database.instance;
-    private cadetBuilder = new CadetBuilder();
+    private legacySystem = new LegacyOrderSystem();
+    
     private awardFactory = new AwardCreator();
     private penaltyFactory = new PenaltyCreator();
-    private legacySystem = new LegacyOrderSystem();
-
+    private orderFactory = new OrderCreator();
 
     constructor() {
         this.setupEventListeners();
+        console.log("[ФАСАД]: Систему інтелектуального обліку активовано.");
     }
 
     private setupEventListeners(): void {
         const eventManager = MilitaryEventManager.getInstance();
-        
-        // Створюємо екземпляри спостерігачів
-        const staffOffice = new StaffOffice();
-        const notificationService = new NotificationService();
+        const staff = new StaffOffice();
+        const notifications = new NotificationService();
 
-        // Підписуємо їх на події (нагороди та стягнення)
-        eventManager.subscribe(MilitaryEventType.AWARD_ADDED, staffOffice);
-        eventManager.subscribe(MilitaryEventType.AWARD_ADDED, notificationService);
-
-        eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, staffOffice);
-        eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, notificationService);
-
-        console.log(`[ФАСАД]: Систему сповіщень активовано (Observer підключено).`);
+        eventManager.subscribe(MilitaryEventType.AWARD_ADDED, staff);
+        eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, staff);
+        eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, notifications);
     }
 
-    public registerCadet(name: string, rank: string, group: string): void {
-        const cadet = this.cadetBuilder
-            .setName(name)
+    public onboardCadet(fullName: string, rank: string, group: string): void {
+        const cadet = new CadetBuilder()
+            .setName(fullName)
             .setRank(rank)
             .setGroup(group)
             .build();
         
         this.database.addCadet(cadet);
-        console.log(`[ФАСАД]: Профіль курсанта ${name} створено та збережено в БД.`);
+        this.syncWithArchive(cadet);
+
+        console.log(`[ФАСАД]: Профіль ${fullName} успішно створено та синхронізовано з архівом.`);
     }
 
-    public addDisciplineEvent(cadetName: string, type: 'award' | 'penalty', data: any): void {
+    public processAutoDiscipline(
+        cadetName: string, 
+        title: string, 
+        orderNumber: string, 
+        issuer: string = "Командування інституту"
+    ): void {
         const cadet = this.database.getCadet(cadetName);
         if (!cadet) {
-            console.log(`[ФАСАД]: Помилка - курсанта ${cadetName} не знайдено.`);
+            console.error(`[ФАСАД]: Курсанта ${cadetName} не знайдено.`);
             return;
         }
 
-        const creator = type === 'award' ? this.awardFactory : this.penaltyFactory;
-        const record = creator.factoryMethod(data);
-        
-        if (type === 'award') cadet.addAward(record as any);
-        else cadet.addPenalty(record as any);
+        const awardKeywords = ["нагорода", "подяка", "заохочення", "грамота", "медаль", "відзнака", "премія"];
+        const penaltyKeywords = ["догана", "зауваження", "стягнення", "попередження", "покарання"];
 
-        console.log(`[ФАСАД]: Новий запис (${type}) успішно додано до профілю.`);
-    }
+        const lowerTitle = title.toLowerCase();
+        const today = new Date().toLocaleDateString();
 
-    public importAllArchiveData(cadetName: string): void {
-        const cadet = this.database.getCadet(cadetName);
-        if (!cadet) {
-            console.log(`[ФАСАД]: Помилка - неможливо імпортувати дані для неіснуючого курсанта ${cadetName}.`);
+        if (awardKeywords.some(word => lowerTitle.includes(word))) {
+            const award = this.awardFactory.factoryMethod({
+                category: title, order: orderNumber, date: today, issuer: issuer
+            });
+            cadet.addAward(award as any);
+        } 
+        else if (penaltyKeywords.some(word => lowerTitle.includes(word))) {
+            const penalty = this.penaltyFactory.factoryMethod({
+                type: "Дисциплінарне стягнення", orderNumber: orderNumber, reason: title, date: today
+            });
+            cadet.addPenalty(penalty as any);
+        } 
+        else {
+            console.warn(`[ФАСАД]: Не вдалося розпізнати тип події для "${title}". Запис проігноровано.`);
             return;
         }
-
-        const lastName = cadetName.split(' ')[0];
-        const rawArchive = this.legacySystem.getFullArchive();
-        let importedCount = 0;
-
-        rawArchive.forEach(rawRow => {
-            const adapted = new LegacyRecordAdapter(rawRow);
-
-            if (adapted.ownerName === lastName) {
-                
-                if (adapted.type === "AWARD") {
-                    cadet.addAward(adapted);
-                } else if (adapted.type === "PENALTY") {
-                    cadet.addPenalty(adapted);
-                }
-                
-                importedCount++;
-            }
+        const officialOrder = this.orderFactory.factoryMethod({
+            orderNumber: orderNumber,
+            date: today,
+            issuer: issuer
         });
 
-        console.log(`[ФАСАД]: З архіву знайдено та імпортовано ${importedCount} записів для ${cadetName}.`);
+        if ((cadet as any).addOrder) {
+            (cadet as any).addOrder(officialOrder);
+        }
     }
 
-    public printUnitReport(): void {
-        console.log("\n--- ФОРМУВАННЯ ЗВІТУ ПІДРОЗДІЛУ ---");
+    private syncWithArchive(cadet: any): void {
+        const lastName = cadet.fullName.split(' ')[0];
+        const rows = this.legacySystem.getFullArchive();
+
+        rows.forEach(row => {
+            const adapted = new LegacyRecordAdapter(row);
+            if (adapted.ownerName === lastName) {
+                if (adapted.type === "AWARD") cadet.addAward(adapted);
+                else cadet.addPenalty(adapted);
+            }
+        });
+    }
+
+    public generateUnitReport(): void {
+        console.log("\n--- ЗАГАЛЬНИЙ ЗВІТ ПІДРОЗДІЛУ (FACADE SMART REPORT) ---");
         this.database.getAllCadets().forEach(cadet => cadet.displayProfile());
     }
 }
