@@ -20,6 +20,10 @@ export class MilitaryEventManager {
         const current = this.listeners.get(type) || [];
         this.listeners.set(type, [...current, observer]);
     }
+    public unsubscribe(type: MilitaryEventType, observer: IObserver): void {
+        const current = this.listeners.get(type) || [];
+        this.listeners.set(type, current.filter(obs => obs !== observer));
+    }
 
     // Розіслати сповіщення всім підписаним
     public notify(event: MilitaryEvent): void {

@@ -1,39 +1,57 @@
-import { MilitarySystemFacade } from "../../structural/facade/MilitarySystemFacade";
+import { MilitaryEventManager } from "./MilitaryEventManager";
+import { MilitaryEventType } from "./MilitaryEventType";
+import { StaffOffice } from "./StaffOffice";
+import { NotificationService } from "./NotificationService";
+import { MilitaryEvent } from "./MilitaryEvent";
 
-function runObserverDemo() {
-    const system = new MilitarySystemFacade();
-
-    console.log("=== ТЕСТУВАННЯ ПАТЕРНУ OBSERVER (EVENT BUS) ===\n");
-
-    system.registerCadet("Олександр Коваленко", "курсант", "141 група");
-    system.registerCadet("Максим Сидоренко", "молодший сержант", "142 група");
-
-    console.log("\n--- СЦЕНАРІЙ 1: ВРУЧЕННЯ НАГОРОДИ ---");
-
-    system.addDisciplineEvent("Олександр Коваленко", "award", {
-        category: "Подяка",
-        order: "№55",
-        date: "08.02.2026",
-        issuer: "Начальник факультету"
-    });
-
-    console.log("\n--- СЦЕНАРІЙ 2: ОГОЛОШЕННЯ СТЯГНЕННЯ ---");
-    system.addDisciplineEvent("Максим Сидоренко", "penalty", {
-        category: "Догана",
-        order: "№12-с",
-        date: "08.02.2026",
-        issuer: "Командир роти",
-        reason: "Порушення форми одягу"
-    });
-
-    console.log("\n--- СЦЕНАРІЙ 3: МАСОВИЙ ІМПОРТ (ADAPTER + OBSERVER) ---");
+function testObserverMethods() {
     
-    system.importAllArchiveData("Коваленко Олександр");
+    const eventManager = MilitaryEventManager.getInstance();
 
-    console.log("\n--- ПЕРЕВІРКА СТАНУ БД ---");
-    system.printUnitReport();
+    const staff = new StaffOffice();
+    const notifications = new NotificationService();
 
-    console.log("=== ТЕСТ ЗАВЕРШЕНО ===");
+    //eventManager.subscribe(MilitaryEventType.AWARD_ADDED, staff);
+    eventManager.subscribe(MilitaryEventType.AWARD_ADDED, staff);
+    
+    eventManager.subscribe(MilitaryEventType.AWARD_ADDED, notifications);
+
+
+
+    console.log("\n[КРОК 2]: Симуляція події НАГОРОДИ через notify()...");
+    const awardEvent: MilitaryEvent = {
+        type: MilitaryEventType.AWARD_ADDED,
+        cadetName: "Чернікова Катерина",
+        details: "Нагороджена грамотою за відмінне навчання",
+        timestamp: new Date()
+    };
+    eventManager.notify(awardEvent);
+
+    console.log("\n[КРОК 3]: Симуляція події ДОГАНИ через notify()...");
+    const penaltyEvent: MilitaryEvent = {
+        type: MilitaryEventType.AWARD_ADDED,
+        cadetName: "Сидоренко Артем",
+        details: "Догана за порушення статуту",
+        timestamp: new Date()
+    };
+
+    eventManager.notify(penaltyEvent);
+
+    console.log("\n[КРОК 4]: Відписка від сповіщень про нагороди та симуляція події НАГОРОДИ...");
+    eventManager.unsubscribe(MilitaryEventType.AWARD_ADDED, notifications);
+
+    const awardEvent1: MilitaryEvent = {
+        type: MilitaryEventType.AWARD_ADDED,
+        cadetName: "Чернікова Катерина",
+        details: "Нагороджена",
+        timestamp: new Date()
+    };
+    eventManager.notify(awardEvent1);
+
+
+
+
+
 }
 
-runObserverDemo();
+testObserverMethods();

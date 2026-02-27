@@ -1,16 +1,30 @@
-import { MilitarySystemFacade } from "../facade/MilitarySystemFacade";
+import { LegacyOrderSystem } from "./LegacyOrderSystem";
+import { LegacyRecordAdapter } from "./LegacyRecordAdapter";
 
-const system = new MilitarySystemFacade();
+function demonstrateAdapterMethods(): void {
+    console.log("=== ТЕСТУВАННЯ МЕТОДІВ ПАТЕРНУ ADAPTER ===\n");
 
-console.log("🚀 ЗАПУСК ТЕСТУВАННЯ ІНТЕЛЕКТУАЛЬНОГО АДАПТЕРА\n");
+    const legacySystem = new LegacyOrderSystem();
+    const archive = legacySystem.getFullArchive();
 
-system.registerCadet("Чернікова Катерина", "Курсант", "221");
-system.registerCadet("Петренко Іван", "Молодший сержант", "222");
+    const rawLine = archive[0]; 
+    console.log(`[ВХІДНІ ДАНІ]: "${rawLine}"\n`);
 
-console.log("> Завантаження історії для Катерини...");
-system.importAllArchiveData("Чернікова Катерина");
+    const adapter = new LegacyRecordAdapter(rawLine);
 
-console.log("\n> Завантаження історії для Івана...");
-system.importAllArchiveData("Петренко Іван");
+    console.log("1. ПЕРЕВІРКА ПОЛІВ ОБ'ЄКТА:");
+    console.log(`- Власник (ownerName): ${adapter.ownerName}`);
+    console.log(`- Категорія (type): ${adapter.type}`);
+    console.log(`- Назва (title): ${adapter.title}`);
+    console.log(`- № наказу (orderNumber): ${adapter.orderNumber}`);
+    console.log(`- Дата (date): ${adapter.date}`);
+    console.log(`- Ранг видавця (issuerRank): ${adapter.issuerRank}`);
 
-system.printUnitReport();
+    console.log("\n2. ПЕРЕВІРКА МЕТОДУ ІНТЕРФЕЙСУ:");
+
+    console.log(`> getFormattedInfo(): ${adapter.getFormattedInfo()}`);
+
+    console.log("\n=== ТЕСТ ЗАВЕРШЕНО ===");
+}
+
+demonstrateAdapterMethods();

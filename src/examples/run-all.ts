@@ -1,35 +1,36 @@
-import { MilitarySystemFacade } from "../structural/facade/MilitarySystemFacade";
+import { MilitarySystemFacade } from "../structural/facade/MilitarySystemFacade.js";
 
 function runMainScenario() {
 
     const system = new MilitarySystemFacade();
 
-    console.log("\n[ЕТАП 1]: Реєстрація нових курсантів...");
-    system.registerCadet("Чернікова Катерина", "курсант", "441 група");
-    system.registerCadet("Сидоренко Артем", "молодший сержант", "442 група");
-
-    console.log("\n[ЕТАП 2]: Проведення дисциплінарних заходів...");
+    console.log("\n[ЕТАП 1]: Реєстрація нових курсантів та автоматична синхронізація...");
     
-    system.addDisciplineEvent("Чернікова Катерина", "award", {
-        category: "Грамота",
-        order: "№102/к",
-        date: "08.02.2026",
-        issuer: "Начальник інституту"
-    });
+    system.onboardCadet("Чернікова Катерина", "курсант", "441 група");
+    system.onboardCadet("Сидоренко Артем", "молодший сержант", "442 група");
 
-    system.addDisciplineEvent("Сидоренко Артем", "penalty", {
-        category: "Догана",
-        order: "№45",
-        date: "08.02.2026",
-        issuer: "Начальник курсу",
-        reason: "Порушення розпорядку дня"
-    });
+    console.log("\n[ЕТАП 2]: Проведення дисциплінарних заходів (через Factory Method & Observer)...");
+    
+    system.processAutoDiscipline(
+        "Чернікова Катерина", 
+        "Грамота", 
+        "№102/к", 
+        "Начальник інституту"
+    );
 
-    console.log("\n[ЕТАП 3]: Синхронізація із застарілою системою (Legacy Archive)...");
-    system.importAllArchiveData("Чернікова Катерина");
+    system.processAutoDiscipline(
+        "Сидоренко Артем", 
+        "Догана: Порушення розпорядку дня", 
+        "№45", 
+        "Начальник курсу"
+    );
 
-    console.log("\n[ЕТАП 4]: Генерація фінального звіту підрозділу...");
-    system.printUnitReport();
+    console.log("\n[ЕТАП 3]: Аналіз даних архіву (вже виконано автоматично)...");
+    console.log("[INFO]: Дані для Катерини були підтягнуті з LegacyOrderSystem під час реєстрації.");
+
+    console.log("\n[ЕТАП 4]: Генерація фінального звіту підрозділу (Strategy)...");
+    
+    system.generateUnitReport();
 }
 
 runMainScenario();

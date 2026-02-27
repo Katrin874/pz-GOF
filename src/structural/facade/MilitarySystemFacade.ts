@@ -11,11 +11,9 @@ import { MilitaryEventType } from "../../behavioral/observer/MilitaryEventType";
 import { StaffOffice } from "../../behavioral/observer/StaffOffice";
 import { NotificationService } from "../../behavioral/observer/NotificationService";
 
-/**
- * ПАТЕРН FACADE (ФАСАД)
- * Інтелектуальний центр управління системою. 
- * Спрощує взаємодію з підсистемами та автоматизує бізнес-логіку.
- */
+import { IRatingStrategy } from "../../behavioral/strategy/IRatingStrategy";
+import { StandardRatingStrategy } from "../../behavioral/strategy/StandardRatingStrategy";
+
 export class MilitarySystemFacade {
     private database = Database.instance;
     private legacySystem = new LegacyOrderSystem();
@@ -24,11 +22,20 @@ export class MilitarySystemFacade {
     private penaltyFactory = new PenaltyCreator();
     private orderFactory = new OrderCreator();
 
+    private ratingStrategy: IRatingStrategy;
+
     constructor() {
         this.setupEventListeners();
+        this.ratingStrategy = new StandardRatingStrategy();
         console.log("[ФАСАД]: Систему інтелектуального обліку активовано.");
     }
 
+    public setRatingStrategy(strategy: IRatingStrategy): void {
+        this.ratingStrategy = strategy;
+        console.log(`[ФАСАД]: Стратегію рейтингу змінено на: ${strategy.getStrategyName()}`);
+    }
+
+    
     private setupEventListeners(): void {
         const eventManager = MilitaryEventManager.getInstance();
         const staff = new StaffOffice();
@@ -39,6 +46,7 @@ export class MilitarySystemFacade {
         eventManager.subscribe(MilitaryEventType.PENALTY_ADDED, notifications);
     }
 
+   
     public onboardCadet(fullName: string, rank: string, group: string): void {
         const cadet = new CadetBuilder()
             .setName(fullName)
@@ -52,6 +60,7 @@ export class MilitarySystemFacade {
         console.log(`[ФАСАД]: Профіль ${fullName} успішно створено та синхронізовано з архівом.`);
     }
 
+    
     public processAutoDiscipline(
         cadetName: string, 
         title: string, 
@@ -83,9 +92,10 @@ export class MilitarySystemFacade {
             cadet.addPenalty(penalty as any);
         } 
         else {
-            console.warn(`[ФАСАД]: Не вдалося розпізнати тип події для "${title}". Запис проігноровано.`);
+            console.warn(`[ФАСАД]: Тип події для "${title}" не розпізнано. Запис проігноровано.`);
             return;
         }
+
         const officialOrder = this.orderFactory.factoryMethod({
             orderNumber: orderNumber,
             date: today,
@@ -111,7 +121,18 @@ export class MilitarySystemFacade {
     }
 
     public generateUnitReport(): void {
-        console.log("\n--- ЗАГАЛЬНИЙ ЗВІТ ПІДРОЗДІЛУ (FACADE SMART REPORT) ---");
-        this.database.getAllCadets().forEach(cadet => cadet.displayProfile());
+        console.log(`\n--- ЗАГАЛЬНИЙ ЗВІТ ПІДРОЗДІЛУ (РЕЖИМ: ${this.ratingStrategy.getStrategyName()}) ---`);
+        
+        this.database.getAllCadets().forEach(cadet => {
+            cadet.displayProfile();
+            
+            const score = this.ratingStrategy.calculate(
+                cadet.awards.length,
+                cadet.penalties.length
+            );
+            
+            console.log(`>>> ПІДСУМКОВИЙ РЕЙТИНГ КУРСАНТА: ${score} балів`);
+            console.log('-----------------------------------------');
+        });
     }
 }
